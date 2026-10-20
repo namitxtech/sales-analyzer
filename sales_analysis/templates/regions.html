@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Regions{% endblock %}{% block body %}
+<h2>Regional Performance</h2><p class="muted">Find weak regions and see when each one started slipping.</p>
+<div class="grid two"><div class="card"><b>Monthly revenue by region</b><div class="h"><canvas id="l"></canvas></div></div>
+<div class="card"><b>Profit by region</b><div class="h"><canvas id="b"></canvas></div></div></div>
+<div class="card scroll"><table id="t"></table></div>{% endblock %}
+{% block js %}<script>(async()=>{const [r,rm]=await Promise.all([J('/api/regions'),J('/api/region_month')]);
+const months=[...new Set(rm.map(x=>x.month))];
+chart('l','line',months,r.map((g,i)=>({label:g.label,borderColor:PAL[i],tension:.3,data:months.map(m=>(rm.find(x=>x.month==m&&x.label==g.label)||{}).revenue)})));
+chart('b','bar',r.map(x=>x.label),[{data:r.map(x=>x.profit),backgroundColor:PAL}],{plugins:{legend:{display:false}}});
+table('t',r,[['Region','label'],['Revenue','revenue',fmt],['Profit','profit',fmt],['Margin','margin',mg],['Orders','orders']])})()</script>{% endblock %}

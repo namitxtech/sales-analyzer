@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}Products{% endblock %}{% block body %}
+<h2>Product Profitability</h2><p class="muted">Revenue ≠ profit: ranking by profit exposes products that sell well but earn little.</p>
+<div class="card"><div class="h" style="height:380px"><canvas id="c"></canvas></div></div>
+<div class="card scroll"><table id="t"></table></div>{% endblock %}
+{% block js %}<script>(async()=>{const p=await J('/api/products');
+chart('c','bar',p.map(x=>x.label),[{label:'Profit',data:p.map(x=>x.profit),backgroundColor:p.map(x=>x.profit<0?'#f87171':'#6ee7b7')}],{indexAxis:'y',plugins:{legend:{display:false}}});
+table('t',p,[['Product','label'],['Revenue','revenue',fmt],['Profit','profit',fmt],['Margin','margin',mg],['Orders','orders']])})()</script>{% endblock %}

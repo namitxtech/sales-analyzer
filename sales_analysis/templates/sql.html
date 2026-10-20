@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}SQL Lab{% endblock %}{% block body %}
+<h2>SQL Lab</h2><p class="muted">Run your own SELECT queries (read-only). Tables: <code>sales</code>, <code>products</code>, <code>cleaning_log</code></p>
+<div class="card"><textarea id="q">SELECT p.category, s.region, ROUND(SUM(s.qty*s.unit_price*(1-s.discount))) AS revenue,
+  ROUND(SUM(s.qty*(s.unit_price*(1-s.discount)-p.unit_cost))) AS profit
+FROM sales s JOIN products p ON p.product_id = s.product_id
+GROUP BY 1,2 ORDER BY profit DESC</textarea>
+<button onclick="go()">▶ Run</button><button class="alt" onclick="ex(0)">Avg discount by region</button><button class="alt" onclick="ex(1)">Loss-making products</button><span id="msg" class="muted"></span></div>
+<div class="card scroll"><table id="t"></table></div>{% endblock %}
+{% block js %}<script>
+const E=["SELECT s.region, ROUND(AVG(s.discount)*100,1) AS avg_discount_pct, COUNT(*) AS orders FROM sales s GROUP BY 1 ORDER BY 2 DESC","SELECT p.product_name, ROUND(SUM(s.qty*(s.unit_price*(1-s.discount)-p.unit_cost))) AS profit FROM sales s JOIN products p USING(product_id) GROUP BY 1 HAVING profit<0"];
+const ex=i=>{q.value=E[i];go()};
+async function go(){const r=await fetch('/api/sql',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q:q.value})}),d=await r.json();
+if(d.error){msg.textContent=d.error;t.innerHTML='';return}msg.textContent=d.rows.length+' rows';
+t.innerHTML='<tr>'+d.cols.map(c=>`<th>${c}</th>`).join('')+'</tr>'+d.rows.map(r=>'<tr>'+r.map(v=>`<td>${v}</td>`).join('')+'</tr>').join('')}go()</script>{% endblock %}

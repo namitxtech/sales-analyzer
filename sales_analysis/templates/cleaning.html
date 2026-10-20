@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}Data Cleaning{% endblock %}{% block body %}
+<h2>Data Cleaning Report</h2><p class="muted">Every fix applied by pandas (etl.py) before loading into SQLite, with row counts.</p>
+<div class="card scroll"><table><tr><th>Step</th><th>What was fixed</th><th>Rows</th></tr>
+{% for l in log %}<tr><td><b>{{l.step}}</b></td><td class="muted">{{l.detail}}</td><td><span class="pill {{'ok' if loop.first or loop.last else 'warn'}}">{{'{:,}'.format(l.rows)}}</span></td></tr>{% endfor %}</table></div>
+<div class="card tip"><b>Method</b><p class="muted">Deduplicate → parse mixed date formats → normalise text labels → drop unattributable rows → impute numeric gaps with grouped medians / lookup tables. Raw data stays in <code>data/raw_sales.csv</code> so the cleaning is reproducible.</p></div>{% endblock %}

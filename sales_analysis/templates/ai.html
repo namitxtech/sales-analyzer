@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}AI Insights{% endblock %}{% block body %}
+<h2>AI Insights: why did sales decline?</h2>
+<p class="muted">Candidate explanations are generated, then each is <b>tested with SQL</b>: last 3 months (from {{P.r0}}) vs the 3 before (from {{P.p0}}).</p>
+{% for h in hs %}<section class="card"><div class="row"><h3 style="margin:0">{{loop.index}}. {{h.title}}</h3>
+<span class="pill {{'bad' if h.ok else 'neutral'}}">{{'Likely driver' if h.ok else 'Not supported'}}</span></div>
+<p class="muted">{{h.why}}. Strongest signal: <b>{{h.worst.label}}</b> ({{'%+.1f'|format(h.worst.chg)}}%).</p>
+<div class="scroll"><table><tr><th>Segment</th><th>Previous</th><th>Recent</th><th>Change</th></tr>
+{% for r in h.rows %}<tr><td>{{r.label}}</td><td>{{'{:,.2f}'.format(r.prev or 0)}}</td><td>{{'{:,.2f}'.format(r.recent or 0)}}</td><td class="{{'dn' if r.chg<0 else 'up'}}">{{'%+.1f'|format(r.chg)}}%</td></tr>{% endfor %}</table></div>
+<details><summary class="muted">View SQL test</summary><pre>{{h.sql}}</pre></details></section>{% endfor %}{% endblock %}

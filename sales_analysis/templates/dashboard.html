@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}{% block body %}
+<h2>Executive Dashboard</h2><p class="muted">Jan 2025 – Sep 2026 · all figures computed live from SQLite with SQL joins</p>
+<div class="grid" id="kpis"></div><br>
+<div class="grid two"><div class="card"><b>Monthly revenue & profit</b><div class="h"><canvas id="trend"></canvas></div></div>
+<div class="card"><b>Revenue by region</b><div class="h"><canvas id="reg"></canvas></div></div></div>
+<div class="grid two"><div class="card"><b>Profit margin by category (%)</b><div class="h"><canvas id="cat"></canvas></div></div>
+<div class="card tip"><b>Auto insights</b><div id="ins" style="margin-top:10px"></div><a href="/ai" style="color:var(--b)">Why are sales declining? →</a></div></div>
+{% endblock %}{% block js %}<script>(async()=>{
+const [k,m,c,r,p]=await Promise.all(['kpi','monthly','categories','regions','products'].map(x=>J('/api/'+x)));
+const g=v=>v==null?'–':`<span class="${v>=0?'up':'dn'}">${v>=0?'▲':'▼'} ${Math.abs(v)}%</span>`;
+kpis.innerHTML=[['Revenue',fmt(k.revenue)],['Profit',fmt(k.profit)],['Profit margin',k.margin+'%'],['MoM growth',g(k.mom)],['YoY growth',g(k.yoy)],['Orders',k.orders.toLocaleString('en-IN')]].map(([a,b])=>`<div class="card kpi"><small>${a}</small><b>${b}</b></div>`).join('');
+chart('trend','line',m.map(x=>x.label),[{label:'Revenue',data:m.map(x=>x.revenue),borderColor:PAL[1],backgroundColor:'#60a5fa22',fill:true,tension:.35},{label:'Profit',data:m.map(x=>x.profit),borderColor:PAL[0],tension:.35}]);
+chart('reg','doughnut',r.map(x=>x.label),[{data:r.map(x=>x.revenue),backgroundColor:PAL,borderWidth:0}]);
+chart('cat','bar',c.map(x=>x.label),[{data:c.map(x=>x.margin),backgroundColor:PAL}],{plugins:{legend:{display:false}}});
+const w=p[p.length-1],wr=r[r.length-1];
+ins.innerHTML=`<p>🏆 <b>${p[0].label}</b> is the top profit driver (${fmt(p[0].profit)}).</p><p>⚠️ <b>${w.label}</b> has a ${w.margin}% margin and ${fmt(w.profit)} profit.</p><p>📉 <b>${wr.label}</b> is the weakest region by profit.</p>`;
+})()</script>{% endblock %}
